@@ -25,7 +25,7 @@ Currently I see this as a way for Blu-Play developers to test their games on PC 
 * HScene: Implemented as a thin wrapper around java.awt.Frame.
 * HGraphicsDevice: Only the "query & set video mode" operation is supported. Allows setting an arbitrary video mode by resizing the HScene window.
 * HSound: Implemented as a wrapper around java.applet.AudioClip, which has a similar interface.
-* UserEventListener: Both input and output handling is implemented. Input keys are mapped to what BD-J sees using this table:
+* UserEventListener: Key presses and releases are properly passed through. Input keys are mapped to what BD-J sees using this table:
 
 |Java key code |BD-J key code       |
 |--------------|--------------------|
