@@ -13,7 +13,7 @@ Unlike Blu-Ray players, Blu-Player is a tiny wrapper around Java AWT that only i
 At the moment, 3 games have been tested:
 
 * Ukkos Journey: Graphics works, but no sound as javax.media.Player is not implemented properly.
-* The UFO game: Boots to the main menu, but cannot start a game. The background is coming from a video and thus not shown.
+* The UFO game: ~~Boots to the main menu, but cannot start a game.~~ The game now starts, but with no background, as expected. The background is coming from a video and thus not shown.
 * Doom 1993 port: Runs fine with most (but not all) sounds.
 
 **Q. What can this be useful for?**
