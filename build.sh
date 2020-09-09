@@ -14,6 +14,8 @@ find build | grep '\.java$' | while read line; do
     fi
 done
 
+sed -i 's/cruateGraphics/createGraphics/g' build/org/dvb/ui/DVBBufferedImage.class
+
 mkdir -p build/META-INF
 cp MANIFEST.MF build/META-INF
 ( cd build; python3 -m zipfile -c ../launcher.jar .; )
