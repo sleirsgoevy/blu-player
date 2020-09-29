@@ -15,7 +15,8 @@ public class HSound
     }
     public synchronized void play() throws Exception
     {
-        url = sleirsgoevy.Blob.registerSoundBDMV(data, 0);
+        if(url == null)
+            url = sleirsgoevy.Blob.registerSoundBDMV(data, 0);
         player = java.applet.Applet.newAudioClip(url);
         player.play();
     }

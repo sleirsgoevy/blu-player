@@ -7,8 +7,8 @@ public interface Player
 {
     public void realize();
     public void prefetch();
-    public void start();
-    public void stop();
+    public void start() throws Exception;
+    public void stop() throws Exception;
     public void close();
     public void addControllerListener(ControllerListener cl);
     public void removeControllerListener(ControllerListener cl);
@@ -17,8 +17,8 @@ public interface Player
     static class PlayerImpl implements Player
     {
         private static long STUB_MEDIA_DURATION = 1000000000;
-        private boolean running = false;
-        private boolean started = false;
+        protected boolean running = false;
+        protected boolean started = false;
         private long time = 0;
         public void realize(){}
         public void prefetch(){}
@@ -26,6 +26,10 @@ public interface Player
         public PlayerImpl()
         {
             lst = new HashSet();
+        }
+        protected long getDuration()
+        {
+            return STUB_MEDIA_DURATION;
         }
         private class NotifierThread extends Thread
         {
@@ -58,6 +62,15 @@ public interface Player
                 }
                 synchronized(self)
                 {
+                    try
+                    {
+                        self.stop();
+                    }
+                    catch(Exception e){}
+                    self.time = 0;
+                }
+                /*synchronized(self)
+                {
                     ControllerEvent e = new EndOfMediaEvent();
                     Iterator i = self.lst.iterator();
                     while(i.hasNext())
@@ -65,22 +78,22 @@ public interface Player
                         ControllerListener cl = (ControllerListener)i.next();
                         cl.controllerUpdate(e);
                     }
-                }
+                }*/
             }
         }
         private NotifierThread notifier;
-        public synchronized void start()
+        public synchronized void start() throws Exception
         {
             if(!running)
             {
-                notifier = new NotifierThread(this, STUB_MEDIA_DURATION - time);
+                notifier = new NotifierThread(this, getDuration() - time);
                 notifier.start();
                 time = System.currentTimeMillis() - time;
                 running = true;
                 started = true;
             }
         }
-        public synchronized void stop()
+        public synchronized void stop() throws Exception
         {
             if(running)
             {
@@ -113,6 +126,48 @@ public interface Player
         public int getState()
         {
             return (started ? 600 : 500);
+        }
+    }
+    static class AudioClipPlayerImpl extends PlayerImpl
+    {
+        private java.net.URL url;
+        private java.applet.AudioClip player;
+        private byte[] data;
+        private int idx;
+        private long dur;
+        public AudioClipPlayerImpl(byte[] d, int i)
+        {
+            super();
+            data = d;
+            idx = i;
+            dur = sleirsgoevy.Blob.getSoundBDMVDuration(d, i);
+        }
+        protected long getDuration()
+        {
+            return dur;
+        }
+        public synchronized void start() throws Exception
+        {
+            if(!running)
+            {
+                if(url != null)
+                    sleirsgoevy.Blob.deregisterBlob(url);
+                url = sleirsgoevy.Blob.registerSoundBDMV(data, idx, getMediaNanoseconds());
+                player = java.applet.Applet.newAudioClip(url);
+                player.play();
+            }
+            super.start();
+        }
+        public synchronized void stop() throws Exception
+        {
+            if(running)
+            {
+                player.stop();
+                sleirsgoevy.Blob.deregisterBlob(url);
+                url = null;
+                player = null;
+            }
+            super.stop();
         }
     }
 }

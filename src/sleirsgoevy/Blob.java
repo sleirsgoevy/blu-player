@@ -26,7 +26,22 @@ public class Blob
     {
         blobs.remove(url.toString().substring(5));
     }
-    public static URL registerSoundBDMV(byte[] data, int idx) throws Exception
+    public static long getSoundBDMVDuration(byte[] data, int idx)
+    {
+        int numInputs = data[45];
+        if(idx < 0 || idx >= numInputs)
+            return 0;
+        int offset = 0;
+        for(int i = 0; i < 4; i++)
+            offset = offset << 8 | ((int)data[48+10*idx+i])&255;
+        int size = 0;
+        for(int i = 0; i < 4; i++)
+            size = size << 8 | ((int)data[52+10*idx+i])&255;
+        boolean stereo = data[46+10*idx] == 0x31;
+        size >>= (stereo?2:1);
+        return (size * 62500l) / 3;
+    }
+    public static URL registerSoundBDMV(byte[] data, int idx, long offset_ns) throws Exception
     {
         int numInputs = data[45];
         if(idx < 0 || idx >= numInputs)
@@ -38,6 +53,12 @@ public class Blob
         for(int i = 0; i < 4; i++)
             size = size << 8 | ((int)data[52+10*idx+i])&255;
         boolean stereo = data[46+10*idx] == 0x31;
+        int skip_ticks = (int)(offset_ns * 3 / 62500);
+        int skip_bytes = skip_ticks * (stereo?4:2);
+        if(skip_bytes > size)
+            skip_bytes = size;
+        offset += skip_bytes;
+        size -= skip_bytes;
         offset += 46+10*numInputs;
         byte[] blob = new byte[size+44];
         blob[0] = (byte)'R';
@@ -75,6 +96,10 @@ public class Blob
             blob[i+44] = data[(i^1)+offset];
         URL xyu = registerBlob(blob);
         return xyu;
+    }
+    public static URL registerSoundBDMV(byte[] data, int idx) throws Exception
+    {
+        return registerSoundBDMV(data, idx, 0);
     }
     static
     {
