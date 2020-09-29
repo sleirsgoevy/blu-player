@@ -80,7 +80,7 @@ public class Blob
         blob[22] = (byte)(stereo?2:1); // #channels
         blob[24] = (byte)48000; // sample rate
         blob[25] = (byte)(48000 >> 8);
-        int byteRate = 48000 * blob[22];
+        int byteRate = 48000 * blob[22] * 2;
         blob[28] = (byte)byteRate; // byte rate
         blob[29] = (byte)(byteRate >> 8);
         blob[30] = (byte)(byteRate >> 16);

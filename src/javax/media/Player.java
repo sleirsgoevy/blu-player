@@ -16,7 +16,7 @@ public interface Player
     public int getState();
     static class PlayerImpl implements Player
     {
-        private static long STUB_MEDIA_DURATION = 1000000000;
+        private static long STUB_MEDIA_DURATION = 1000000000000l;
         protected boolean running = false;
         protected boolean started = false;
         private long time = 0;
@@ -44,13 +44,7 @@ public interface Player
             {
                 synchronized(self)
                 {
-                    ControllerEvent e = new StartEvent();
-                    Iterator i = self.lst.iterator();
-                    while(i.hasNext())
-                    {
-                        ControllerListener cl = (ControllerListener)i.next();
-                        cl.controllerUpdate(e);
-                    }
+                    broadcastEvent(new StartEvent());
                 }
                 try
                 {
@@ -68,17 +62,17 @@ public interface Player
                     }
                     catch(Exception e){}
                     self.time = 0;
+                    broadcastEvent(new EndOfMediaEvent());
                 }
-                /*synchronized(self)
-                {
-                    ControllerEvent e = new EndOfMediaEvent();
-                    Iterator i = self.lst.iterator();
-                    while(i.hasNext())
-                    {
-                        ControllerListener cl = (ControllerListener)i.next();
-                        cl.controllerUpdate(e);
-                    }
-                }*/
+            }
+        }
+        private synchronized void broadcastEvent(ControllerEvent e)
+        {
+            Iterator i = lst.iterator();
+            while(i.hasNext())
+            {
+                ControllerListener cl = (ControllerListener)i.next();
+                cl.controllerUpdate(e);
             }
         }
         private NotifierThread notifier;
@@ -92,6 +86,8 @@ public interface Player
                 running = true;
                 started = true;
             }
+            else
+                broadcastEvent(new StartEvent());
         }
         public synchronized void stop() throws Exception
         {
@@ -101,13 +97,7 @@ public interface Player
                 notifier = null;
                 time = System.currentTimeMillis() - time;
                 running = false;
-                ControllerEvent e = new StopEvent();
-                Iterator i = lst.iterator();
-                while(i.hasNext())
-                {
-                    ControllerListener cl = (ControllerListener)i.next();
-                    cl.controllerUpdate(e);
-                }
+                broadcastEvent(new StopEvent());
             }
         }
         public void close(){}
